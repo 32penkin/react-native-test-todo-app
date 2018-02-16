@@ -6,7 +6,8 @@ import {
   Platform,
   ListView,
   Keyboard,
-  AsyncStorage
+  AsyncStorage,
+  ActivityIndicator,
 } from 'react-native';
 import Header from './header';
 import Footer from './footer';
@@ -25,6 +26,7 @@ class App extends Component {
     super(props);
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
+      loading: true,
       allComplete: false,
       filter: 'ALL',
       value: '',
@@ -45,9 +47,11 @@ class App extends Component {
     AsyncStorage.getItem('items').then(json => {
       try {
         const items = JSON.parse(json);
-        this.setSource(items, items);
+        this.setSource(items, items, { loading: false });
       } catch (e) {
-
+        this.setState({
+          loading: false,
+        })
       }
     })
   }
@@ -144,6 +148,12 @@ class App extends Component {
           filter={this.state.filter}
           onClearComplete={this.handleClearComplete}
         />
+        {this.state.loading && <View style={styles.loading}>
+          <ActivityIndicator
+            animating
+            size="large"
+          />
+        </View>}
       </View>
     );
   }
@@ -156,6 +166,16 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: { paddingTop: 30 }
     })
+  },
+  loading: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, .2)'
   },
   content: {
     flex: 1
