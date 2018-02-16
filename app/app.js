@@ -4,17 +4,27 @@ import Header from './header';
 import Footer from './footer';
 import Row from './row';
 
+const filterItems = (items, filter) => {
+  return items.filter(item => {
+    if (filter === 'ALL') return true;
+    if (filter === 'COMPLETED') return item.complete;
+    if (filter === 'ACTIVE') return !item.complete;
+  })
+};
+
 class App extends Component {
   constructor(props) {
     super(props);
     const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
       allComplete: false,
+      filter: 'ALL',
       value: '',
       items: [],
       dataSource: ds.cloneWithRows([])
     };
 
+    this.handleFilter = this.handleFilter.bind(this);
     this.handleRemoveItem = this.handleRemoveItem.bind(this);
     this.handleToggleComplete = this.handleToggleComplete.bind(this);
     this.setSource = this.setSource.bind(this);
@@ -30,9 +40,13 @@ class App extends Component {
     })
   }
 
+  handleFilter(filter) {
+    this.setSource(this.state.items, filterItems(this.state.items, filter), { filter });
+  }
+
   handleRemoveItem(key) {
     const newItems = this.state.items.filter(item => item.key !== key);
-    this.setSource(newItems, newItems);
+    this.setSource(newItems, filterItems(newItems, this.state.filter));
   }
 
   handleToggleComplete(key, complete) {
@@ -43,7 +57,7 @@ class App extends Component {
         complete
       }
     });
-    this.setSource(newItems, newItems);
+    this.setSource(newItems, filterItems(newItems, this.state.filter));
   }
 
   handleToggleAllComplete() {
@@ -52,7 +66,7 @@ class App extends Component {
       ...item,
       complete
     }));
-    this.setSource(newItems, newItems, { allComplete: complete })
+    this.setSource(newItems, filterItems(newItems, this.state.filter), { allComplete: complete })
   }
 
   handleAddItem() {
@@ -65,7 +79,7 @@ class App extends Component {
         complete: false
       }
     ];
-    this.setSource(newItems, newItems, { value: "" })
+    this.setSource(newItems, filterItems(newItems, this.state.filter), { value: '' })
   }
 
   render() {
@@ -98,7 +112,10 @@ class App extends Component {
             }}
           />
         </View>
-        <Footer />
+        <Footer
+          onFilter={this.handleFilter}
+          filter={this.state.filter}
+        />
       </View>
     );
   }
@@ -107,7 +124,7 @@ class App extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: '#F5F5F5',
     ...Platform.select({
       ios: { paddingTop: 30 }
     })
@@ -116,11 +133,11 @@ const styles = StyleSheet.create({
     flex: 1
   },
   list: {
-    backgroundColor: '#FFF'
+    backgroundColor: '#FFF',
   },
   separator: {
     borderWidth: 1,
-    borderColor: "#F5F5F5"
+    borderColor:'#F5F5F5',
   }
 });
 
