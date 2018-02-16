@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {View, Text, StyleSheet, Platform, ListView, Keyboard} from 'react-native';
+import React, { Component } from 'react';
+import { View, Text, StyleSheet, Platform, ListView, Keyboard } from 'react-native';
 import Header from './header';
 import Footer from './footer';
 import Row from './row';
@@ -14,42 +14,51 @@ class App extends Component {
       items: [],
       dataSource: ds.cloneWithRows([])
     };
-
+    this.handleToggleComplete = this.handleToggleComplete.bind(this);
+    this.setSource = this.setSource.bind(this);
     this.handleAddItem = this.handleAddItem.bind(this);
     this.handleToggleAllComplete = this.handleToggleAllComplete.bind(this);
-    this.setSource = this.setSource.bind(this);
   }
 
-  setSource(items, itemsDataSource, otherState = {}) {
+  setSource(items, itemsDatasource, otherState = {}) {
     this.setState({
       items,
-      dataSource: this.state.dataSource.cloneWithRows(itemsDataSource),
+      dataSource: this.state.dataSource.cloneWithRows(itemsDatasource),
       ...otherState
     })
   }
+
+  handleToggleComplete(key, complete) {
+    const newItems = this.state.items.map((item) => {
+      if (item.key !== key) return item;
+      return {
+        ...item,
+        complete
+      }
+    });
+    this.setSource(newItems, newItems);
+  }
+
   handleToggleAllComplete() {
     const complete = !this.state.allComplete;
-    const newItems = this.state.items(item => ({
+    const newItems = this.state.items.map((item) => ({
       ...item,
-      complete,
+      complete
     }));
-    this.setSource(newItems, newItems, {allComplete: complete});
+    this.setSource(newItems, newItems, { allComplete: complete })
   }
 
   handleAddItem() {
-    if (!this.state.value) {
-      return;
-    }
-
+    if (!this.state.value) return;
     const newItems = [
       ...this.state.items,
       {
         key: Date.now(),
         text: this.state.value,
-        complete: false,
+        complete: false
       }
     ];
-    this.setSource(newItems, newItems, { value: '' });
+    this.setSource(newItems, newItems, { value: "" })
   }
 
   render() {
@@ -58,7 +67,7 @@ class App extends Component {
         <Header
           value={this.state.value}
           onAddItem={this.handleAddItem}
-          onChange={(value) => this.setState({value})}
+          onChange={(value) => this.setState({ value })}
           onToggleAllComplete={this.handleToggleAllComplete}
         />
         <View style={styles.content}>
@@ -67,25 +76,21 @@ class App extends Component {
             enableEmptySections
             dataSource={this.state.dataSource}
             onScroll={() => Keyboard.dismiss()}
-            renderRow={({key, ...value}) => {
+            renderRow={({ key, ...value}) => {
               return (
                 <Row
                   key={key}
-                  { ...value }
+                  onComplete={(complete) => this.handleToggleComplete(key, complete)}
+                  {...value}
                 />
-              );
+              )
             }}
             renderSeparator={(sectionId, rowId) => {
-              return (
-                <View
-                  key={rowId}
-                  style={styles.separator}
-                />
-              );
+              return <View key={rowId} style={styles.separator}/>
             }}
           />
         </View>
-        <Footer/>
+        <Footer />
       </View>
     );
   }
@@ -94,20 +99,20 @@ class App extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
     ...Platform.select({
-      ios: {paddingTop: 30},
-    }),
+      ios: { paddingTop: 30 }
+    })
   },
   content: {
-    flex: 1,
+    flex: 1
   },
   list: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFF'
   },
   separator: {
     borderWidth: 1,
-    borderColor: '#F5F5F5'
+    borderColor: "#F5F5F5"
   }
 });
 
