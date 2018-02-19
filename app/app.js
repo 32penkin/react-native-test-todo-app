@@ -34,6 +34,8 @@ class App extends Component {
       dataSource: ds.cloneWithRows([])
     };
 
+    this.handleUpdateText = this.handleUpdateText.bind(this);
+    this.handleToggleEditing = this.handleToggleEditing.bind(this);
     this.handleClearComplete = this.handleClearComplete.bind(this);
     this.handleFilter = this.handleFilter.bind(this);
     this.handleRemoveItem = this.handleRemoveItem.bind(this);
@@ -54,6 +56,34 @@ class App extends Component {
         })
       }
     })
+  }
+
+  handleUpdateText(key, text) {
+    const newItems = this.state.items.map(item => {
+      if (item.key !== key) {
+        return item;
+      } else {
+        return {
+          ...item,
+          text
+        }
+      }
+    });
+    this.setSource(newItems, filterItems(newItems, this.state.filter));
+  }
+
+  handleToggleEditing(key, editing) {
+    const newItems = this.state.items.map(item => {
+      if (item.key !== key) {
+        return item;
+      } else {
+        return {
+          ...item,
+          editing
+        }
+      }
+    });
+    this.setSource(newItems, filterItems(newItems, this.state.filter));
   }
 
   setSource(items, itemsDatasource, otherState = {}) {
@@ -131,6 +161,8 @@ class App extends Component {
               return (
                 <Row
                   key={key}
+                  onUpdate={(text) => this.handleUpdateText(key, text)}
+                  onToggleEdit={(editing) => this.handleToggleEditing(key, editing)}
                   onRemove={() => this.handleRemoveItem(key)}
                   onComplete={(complete) => this.handleToggleComplete(key, complete)}
                   {...value}
